@@ -3,34 +3,40 @@ using System.Security.Cryptography;
 
 namespace Altairis.CheckPoint.Data;
 
-public struct Suid : IParsable<Suid>, IFormattable, IEquatable<Suid> {
-    private const string SuidAlphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-    private const int SuidLength = 12;
+/// <summary>
+/// This class is human-friendly representation of random unique identifier. It's modelled after <see cref="Guid"/> class, but it's shorter and easier to read.
+/// It uses Base32 encoding with alphabet that doesn't contain characters that are easily confused with each other (0 and O, 1 and I, etc.).
+/// It is 16 characters long, which gives 80 bits of entropy, which is more than enough for most purposes.
+/// Suid is usually formatted as four groups of four characters separated by dashes (xxxx-xxxx-xxxx-xxxx), but it can be formatted in other ways as well.
+/// </summary>
+public class Suid : IParsable<Suid>, IFormattable, IEquatable<Suid> {
+    public const string Alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+    public const int Length = 16;
 
-    private readonly string value;
+    private readonly string value = new(Alphabet[0], Length);
 
     // Constructors
-
-    public Suid() {
-        this.value = new string(SuidAlphabet[0], SuidLength);
-    }
 
     public Suid(string s) {
         if (string.IsNullOrWhiteSpace(s)) throw new ArgumentException("Value cannot be empty or whitespace only string.", nameof(s));
 
-        s = new string(s.ToUpperInvariant().Where(SuidAlphabet.Contains).ToArray());
-        if (s.Length != SuidLength) throw new FormatException("Value is not valid SUID.");
+        // Remove all non-alphabet characters
+        s = new string(s.ToUpperInvariant().Where(Alphabet.Contains).ToArray());
 
+        // Check if it's still valid value after removing non-alphabet characters
+        if (s.Length != Length) throw new ArgumentException($"Value '{s}' is not valid SUID.", nameof(s));
+
+        // Store value
         this.value = s;
-
     }
 
     // Generating
 
     public static Suid NewSuid() {
-        var chars = new char[SuidLength];
-        for (var i = 0; i < SuidLength; i++) {
-            chars[i] = SuidAlphabet[RandomNumberGenerator.GetInt32(SuidAlphabet.Length)];
+        // Generate random string
+        var chars = new char[Length];
+        for (var i = 0; i < Length; i++) {
+            chars[i] = Alphabet[RandomNumberGenerator.GetInt32(Alphabet.Length)];
         }
         return new(new string(chars));
     }
@@ -55,26 +61,38 @@ public struct Suid : IParsable<Suid>, IFormattable, IEquatable<Suid> {
 
     // Comparison
 
-    public override readonly int GetHashCode() => this.value.GetHashCode();
+    public override  int GetHashCode() => this.value.GetHashCode();
 
     public static bool operator ==(Suid? left, Suid? right) => left?.Equals(right) ?? right is null;
 
     public static bool operator !=(Suid? left, Suid? right) => !(left == right);
 
-    public readonly bool Equals(Suid other) => this.value.Equals(other.value, StringComparison.Ordinal);
+    public bool Equals(Suid? other) => this.value != null && other?.value != null && this.value.Equals(other.value, StringComparison.Ordinal);
 
-    public override readonly bool Equals(object? obj) => obj is Suid suid && this.Equals(suid);
+    public override  bool Equals(object? obj) => obj is not null && obj is Suid suid && this.Equals(suid);
 
     // Formatting
 
-    public override readonly string ToString() => this.ToString("G", null);
+    public override string ToString() => this.ToString("G", null);
 
-    public readonly string ToString(string? format, IFormatProvider? formatProvider) {
+    public string ToString(string? format) => this.ToString(format, null);
+
+    public string ToString(string? format, IFormatProvider? formatProvider) {
+        // Use default format if none specified
+        if (string.IsNullOrEmpty(format)) format = "G";
+
+        // Apply format
         return format switch {
-            "n" => this.value.ToLowerInvariant(),
+            // General format (xxxx-xxxx-xxxx-xxxx)
+            "G" => $"{this.value[0..4]}-{this.value[4..8]}-{this.value[8..12]}-{this.value[12..16]}".ToUpperInvariant(),
+            "g" => $"{this.value[0..4]}-{this.value[4..8]}-{this.value[8..12]}-{this.value[12..16]}".ToLowerInvariant(),
+            // Space delimited format (xxxx xxxx xxxx xxxx)
+            "S" => $"{this.value[0..4]} {this.value[4..8]} {this.value[8..12]} {this.value[12..16]}".ToUpperInvariant(),
+            "s" => $"{this.value[0..4]} {this.value[4..8]} {this.value[8..12]} {this.value[12..16]}".ToLowerInvariant(),
+            // No delimiters (xxxxxxxxxxxxxxxx)
             "N" => this.value.ToUpperInvariant(),
-            "g" => $"{this.value[0..3]}-{this.value[4..7]}-{this.value[8..12]}".ToLowerInvariant(),
-            "G" or "" or null => $"{this.value[0..3]}-{this.value[4..7]}-{this.value[8..12]}".ToLowerInvariant(),
+            "n" => this.value.ToLowerInvariant(),
+            // Invalid format
             _ => throw new FormatException($"Unknown format string '{format}'."),
         };
     }

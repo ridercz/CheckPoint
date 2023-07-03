@@ -4,16 +4,14 @@ using System.Security.Cryptography;
 namespace Altairis.CheckPoint.Data;
 
 /// <summary>
-/// This class is human-friendly representation of random unique identifier. It's modelled after <see cref="Guid"/> class, but it's shorter and easier to read.
+/// Suid (String Unique IDentifier) is a human-friendly representation of random unique identifier. It's modelled after <see cref="Guid"/> class, but it's shorter and easier to read.
 /// It uses Base32 encoding with alphabet that doesn't contain characters that are easily confused with each other (0 and O, 1 and I, etc.).
 /// It is 16 characters long, which gives 80 bits of entropy, which is more than enough for most purposes.
 /// Suid is usually formatted as four groups of four characters separated by dashes (xxxx-xxxx-xxxx-xxxx), but it can be formatted in other ways as well.
 /// </summary>
-public class Suid : IParsable<Suid>, IFormattable, IEquatable<Suid> {
+public struct Suid : IParsable<Suid>, IFormattable, IEquatable<Suid> {
     public const string Alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
     public const int Length = 16;
-
-    private readonly string value = new(Alphabet[0], Length);
 
     // Constructors
 
@@ -27,7 +25,16 @@ public class Suid : IParsable<Suid>, IFormattable, IEquatable<Suid> {
         if (s.Length != Length) throw new ArgumentException($"Value '{s}' is not valid SUID.", nameof(s));
 
         // Store value
-        this.value = s;
+        this.Value = s;
+    }
+
+    // Properties
+
+    private string? value;
+
+    public string Value {
+        readonly get => this.value ?? new string(Alphabet[0], Length);
+        init => this.value = value;
     }
 
     // Generating
@@ -61,37 +68,37 @@ public class Suid : IParsable<Suid>, IFormattable, IEquatable<Suid> {
 
     // Comparison
 
-    public override  int GetHashCode() => this.value.GetHashCode();
+    public override readonly int GetHashCode() => this.Value.GetHashCode();
 
     public static bool operator ==(Suid? left, Suid? right) => left?.Equals(right) ?? right is null;
 
     public static bool operator !=(Suid? left, Suid? right) => !(left == right);
 
-    public bool Equals(Suid? other) => this.value != null && other?.value != null && this.value.Equals(other.value, StringComparison.Ordinal);
+    public readonly bool Equals(Suid other) => this.Value.Equals(other.Value, StringComparison.Ordinal);
 
-    public override  bool Equals(object? obj) => obj is not null && obj is Suid suid && this.Equals(suid);
+    public override readonly bool Equals(object? obj) => obj is not null && obj is Suid suid && this.Equals(suid);
 
     // Formatting
 
-    public override string ToString() => this.ToString("G", null);
+    public override readonly string ToString() => this.ToString("G", null);
 
-    public string ToString(string? format) => this.ToString(format, null);
+    public readonly string ToString(string? format) => this.ToString(format, null);
 
-    public string ToString(string? format, IFormatProvider? formatProvider) {
+    public readonly string ToString(string? format, IFormatProvider? formatProvider) {
         // Use default format if none specified
         if (string.IsNullOrEmpty(format)) format = "G";
 
         // Apply format
         return format switch {
             // General format (xxxx-xxxx-xxxx-xxxx)
-            "G" => $"{this.value[0..4]}-{this.value[4..8]}-{this.value[8..12]}-{this.value[12..16]}".ToUpperInvariant(),
-            "g" => $"{this.value[0..4]}-{this.value[4..8]}-{this.value[8..12]}-{this.value[12..16]}".ToLowerInvariant(),
+            "G" => $"{this.Value[0..4]}-{this.Value[4..8]}-{this.Value[8..12]}-{this.Value[12..16]}".ToUpperInvariant(),
+            "g" => $"{this.Value[0..4]}-{this.Value[4..8]}-{this.Value[8..12]}-{this.Value[12..16]}".ToLowerInvariant(),
             // Space delimited format (xxxx xxxx xxxx xxxx)
-            "S" => $"{this.value[0..4]} {this.value[4..8]} {this.value[8..12]} {this.value[12..16]}".ToUpperInvariant(),
-            "s" => $"{this.value[0..4]} {this.value[4..8]} {this.value[8..12]} {this.value[12..16]}".ToLowerInvariant(),
+            "S" => $"{this.Value[0..4]} {this.Value[4..8]} {this.Value[8..12]} {this.Value[12..16]}".ToUpperInvariant(),
+            "s" => $"{this.Value[0..4]} {this.Value[4..8]} {this.Value[8..12]} {this.Value[12..16]}".ToLowerInvariant(),
             // No delimiters (xxxxxxxxxxxxxxxx)
-            "N" => this.value.ToUpperInvariant(),
-            "n" => this.value.ToLowerInvariant(),
+            "N" => this.Value.ToUpperInvariant(),
+            "n" => this.Value.ToLowerInvariant(),
             // Invalid format
             _ => throw new FormatException($"Unknown format string '{format}'."),
         };

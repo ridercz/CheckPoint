@@ -8,7 +8,7 @@ public class Competitor {
     public Suid Id { get; set; } = Suid.NewSuid();
 
     [Required, ForeignKey(nameof(Event))]
-    public required Suid EventId { get; set; }
+    public Suid EventId { get; set; }
 
     [ForeignKey(nameof(EventId))]
     public Event? Event { get; set; }

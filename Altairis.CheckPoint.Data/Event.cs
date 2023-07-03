@@ -14,4 +14,8 @@ public class Event {
     [DataType(DataType.MultilineText)]
     public string? Notes { get; set; }
 
+    public ICollection<Competitor> Competitors { get; set; } = new HashSet<Competitor>();
+
+    public ICollection<Checkpoint> Checkpoints { get; set; } = new HashSet<Checkpoint>();
+
 }

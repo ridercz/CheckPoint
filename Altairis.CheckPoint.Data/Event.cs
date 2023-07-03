@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Altairis.CheckPoint.Data;
+﻿namespace Altairis.CheckPoint.Data;
 
 public class Event {
 

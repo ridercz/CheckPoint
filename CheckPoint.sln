@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altairis.CheckPoint.Web", "Altairis.CheckPoint.Web\Altairis.CheckPoint.Web.csproj", "{710E3852-82E7-4EED-AD72-E14C36ABFC60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Altairis.CheckPoint.Web", "Altairis.CheckPoint.Web\Altairis.CheckPoint.Web.csproj", "{710E3852-82E7-4EED-AD72-E14C36ABFC60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altairis.CheckPoint.Data", "Altairis.CheckPoint.Data\Altairis.CheckPoint.Data.csproj", "{89213BAE-5494-4F9D-ABE5-A0A16FC93B75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Altairis.CheckPoint.Data", "Altairis.CheckPoint.Data\Altairis.CheckPoint.Data.csproj", "{89213BAE-5494-4F9D-ABE5-A0A16FC93B75}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BD675319-C906-46DB-83F8-2526849A24E6}"
 	ProjectSection(SolutionItems) = preProject

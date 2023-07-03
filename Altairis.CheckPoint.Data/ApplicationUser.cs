@@ -2,10 +2,16 @@
 
 namespace Altairis.CheckPoint.Data;
 
-public class ApplicationUser : IdentityUser<Guid> {
+public class ApplicationUser : IdentityUser<Suid> {
+
+    [Key]
+    public override Suid Id { get; set; } = Suid.NewSuid();
 
 }
 
-public class ApplicationRole : IdentityRole<Guid> {
+public class ApplicationRole : IdentityRole<Suid> {
+
+    [Key]
+    public override Suid Id { get; set; } = Suid.NewSuid();
 
 }
